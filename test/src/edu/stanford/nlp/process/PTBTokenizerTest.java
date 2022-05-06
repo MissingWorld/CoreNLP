@@ -757,17 +757,28 @@ public class PTBTokenizerTest {
   }
 
   private final String[] emojiInputs = {
-          // The non-BMP Emoji end up being surrogate pair encoded in Java! This list includes a flag.
+          // The non-BMP Emoji end up being surrogate pair encoded in Java! This list includes a flag. "😉😀😂😍🤡🇦🇺🍺"
           "\uD83D\uDE09\uD83D\uDE00\uD83D\uDE02\uD83D\uDE0D\uD83E\uDD21\uD83C\uDDE6\uD83C\uDDFA\uD83C\uDF7A",
           // People with skin tones
           "\uD83D\uDC66\uD83C\uDFFB\uD83D\uDC67\uD83C\uDFFF",
-          // A family with cheese
+          // A family with cheese; \u200D is the zero-width joiner for making complex emoji
           "\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\uD83E\uDDC0",
           // Some BMP emoji
           "\u00AE\u203C\u2198\u231A\u2328\u23F0\u2620\u26BD\u2705\u2757",
           // Choosing emoji vs. text presentation.
           "⚠⚠️⚠︎❤️❤",
-          "\uD83D\uDC69\u200D⚖\uD83D\uDC68\uD83C\uDFFF\u200D\uD83C\uDFA4"
+          // 👩 ‍ ⚖ , 👨🏿‍🎤  i.e. female judge person with skin color (scales is U+2696) then ??
+          "\uD83D\uDC69\u200D⚖\uD83D\uDC68\uD83C\uDFFF\u200D\uD83C\uDFA4",
+          "555-0199",
+          "555\u20120199",
+          "DBM submits proposed ₱5.024-trillion 2022 budget",
+          // The tokenizer should handle Indian language etc. non-spacing and combining marks
+          "Kanakadasa's \"Ramadhanya Charite\" (ರಾಮಧಾನ್ಯ ಚರಿತೆ ) is a rare work.",
+          // Be okay with spaced acronyms
+          "Today, U. A. E. is a rich country.",
+          // California flag: 🏴󠁵󠁳󠁣󠁡󠁿
+          "\uD83C\uDFF4\uDB40\uDC75\uDB40\uDC73\uDB40\uDC63\uDB40\uDC61\uDB40\uDC7F",
+          "when one goes 'tisk tisk' at something",
   };
 
   private final String[][] emojiGold = {
@@ -776,7 +787,15 @@ public class PTBTokenizerTest {
           { "\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67", "\uD83E\uDDC0" },
           { "\u00AE", "\u203C", "\u2198", "\u231A", "\u2328", "\u23F0", "\u2620", "\u26BD", "\u2705", "\u2757" },
           { "⚠", "⚠️", "⚠︎", "❤️", "❤"},
-          { "\uD83D\uDC69\u200D⚖", "\uD83D\uDC68\uD83C\uDFFF\u200D\uD83C\uDFA4" }
+          { "\uD83D\uDC69\u200D⚖", "\uD83D\uDC68\uD83C\uDFFF\u200D\uD83C\uDFA4" },
+          { "555-0199" },
+          { "555‒0199" },
+          {"DBM", "submits", "proposed", "₱", "5.024", "-", "trillion", "2022", "budget" },
+          { "Kanakadasa", "'s", "\"", "Ramadhanya", "Charite", "\"", "(", "ರಾಮಧಾನ್ಯ", "ಚರಿತೆ", ")", "is", "a", "rare", "work", "." },
+          { "Today", ",", "U.", "A.", "E.", "is", "a", "rich", "country", "." },
+          // California flag: 🏴󠁵󠁳󠁣󠁡󠁿
+          { "\uD83C\uDFF4\uDB40\uDC75\uDB40\uDC73\uDB40\uDC63\uDB40\uDC61\uDB40\uDC7F" },
+          { "when", "one", "goes", "'", "tisk", "tisk", "'", "at", "something" },
   };
 
   @Test
@@ -802,6 +821,16 @@ public class PTBTokenizerTest {
           "In 2009, Wiesel criticized the Vatican for lifting the excommunication of controversial bishop Richard Williamson, a member of the Society of Saint Pius X.",
           "RM460.35 million",
           "I like Amb. McFaul.",
+          "including eight honorary LL.D.s (Doctorate of Laws)",
+          "I is less than Br. The marked reduction is predicted.",
+          "I met A. I. Markov to begin.",
+          "states (loc. cit.) that",
+          "U.S. vs. The World",
+          "for max. 14 days",
+          "stems reach a max. of 3.5 m",
+          "for min. 14 days",
+          "stems reach a min. of 3.5 m",
+          "Apple released the iPhone 11 Pro Max. The iPhone family expanded."
   };
 
   private final String[][] tweetGold = {
@@ -827,7 +856,17 @@ public class PTBTokenizerTest {
                   "of", "controversial", "bishop", "Richard", "Williamson", ",", "a", "member", "of", "the",
                   "Society", "of", "Saint", "Pius", "X." },
           { "RM", "460.35", "million" },
-          { "I", "like", "Amb.", "McFaul", "." } ,
+          { "I", "like", "Amb.", "McFaul", "." },
+          { "including", "eight", "honorary", "LL.D.s", "(", "Doctorate", "of", "Laws", ")" },
+          { "I", "is", "less", "than", "Br.", ".", "The", "marked", "reduction", "is", "predicted", "." },
+          { "I", "met", "A.", "I.", "Markov", "to", "begin", "." },
+          { "states", "(", "loc.", "cit.", ")", "that" },
+          { "U.S.", "vs.", "The", "World" },
+          { "for", "max.", "14", "days" },
+          { "stems", "reach", "a", "max.", "of", "3.5", "m" },
+          { "for", "min.", "14", "days" },
+          { "stems", "reach", "a", "min.", "of", "3.5", "m" },
+          { "Apple", "released", "the", "iPhone", "11", "Pro", "Max", ".", "The", "iPhone", "family", "expanded", "." },
   };
 
   @Test

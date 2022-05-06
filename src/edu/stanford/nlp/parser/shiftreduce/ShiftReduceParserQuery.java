@@ -71,7 +71,12 @@ public class ShiftReduceParserQuery implements ParserQuery  {
     Tsurgeon.parseOperation("[move punc >-1 top] [if exists single prune single]");
 
   private boolean parseInternal() {
-    final int maxBeamSize = Math.max(parser.op.testOptions().beamSize, 1);
+    final int maxBeamSize;
+    if (parser.op.testOptions().beamSize == 0) {
+      maxBeamSize = Math.max(parser.op.trainOptions().beamSize, 1);
+    } else {
+      maxBeamSize = parser.op.testOptions().beamSize;
+    }
 
     success = true;
     unparsable = false;
@@ -306,10 +311,13 @@ public class ShiftReduceParserQuery implements ParserQuery  {
                                       "\n Orig: " + SentenceUtils.listToString(originalSentence) +
                                       "\n Pars: " + SentenceUtils.listToString(leaves));
     }
-    // TODO: get rid of this cast
-    Iterator<? extends Label> wordsIterator = (Iterator<? extends Label>) originalSentence.iterator();
-    for (Tree leaf : leaves) {
-      leaf.setLabel(wordsIterator.next());
+    Iterator<Tree> leafIterator = leaves.iterator();
+    for (HasWord word : originalSentence) {
+      Tree leaf = leafIterator.next();
+      if (!(word instanceof Label)) {
+        continue;
+      }
+      leaf.setLabel((Label) word);
     }
   }
 

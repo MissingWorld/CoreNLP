@@ -168,7 +168,7 @@ import java.text.DecimalFormat;
        The second format is a file of Penn Treebank formatted (i.e., s-expression) tree files.  Trees are loaded one at a time and the tagged words in a tree are used as a training sentence.
        To specify this format, preface the filename with "{@code format=TREES,}".  <br>
        The final possible format is TSV files (tab-separated columns).  To specify a TSV file, set {@code trainFile} to "{@code format=TSV,wordColumn=x,tagColumn=y,filename}".
-       Column numbers are indexed from 0, and sentences are separated with blank lines. The default wordColumn is 0 and default tagColumn is 1.
+       Column numbers are indexed from 0, and sentences are separated with blank lines. The default wordColumn is 0 and default tagColumn is 1.  If comments=true, then comment lines will be skipped (a common thing to appear in conllu files)
        <br>
        A file can be in a different character set encoding than the tagger's default encoding by prefacing the filename with {@code "encoding=ENC,"}.
        You can specify the tagSeparator character in a TEXT file by prefacing the filename with "tagSeparator=c,". <br>
@@ -522,14 +522,11 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
       veryCommonWordThresh = config.getVeryCommonWordThresh();
       occurringTagsOnly = config.occurringTagsOnly();
       possibleTagsOnly = config.possibleTagsOnly();
-      // log.info("occurringTagsOnly: "+occurringTagsOnly);
-      // log.info("possibleTagsOnly: "+possibleTagsOnly);
-
       defaultScore = config.getDefaultScore();
     }
 
     // just in case, reset the defaultScores array so it will be
-    // recached later when needed.  can't initialize it now in case we
+    // re-cached later when needed.  can't initialize it now in case we
     // don't know ysize yet
     defaultScores = null;
 
@@ -1193,9 +1190,8 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
    * Reads in the training corpus from a filename and trains the tagger
    *
    * @param config Configuration parameters for training a model (filename, etc.
-   * @throws IOException If IO problem
    */
-  private static void trainAndSaveModel(TaggerConfig config) throws IOException {
+  private static void trainAndSaveModel(TaggerConfig config) {
 
     String modelName = config.getModel();
     MaxentTagger maxentTagger = new MaxentTagger();
@@ -1363,24 +1359,26 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
 
   } // end class TaggerWrapper
 
-  private static String getXMLWords(List<? extends HasWord> sentence,
+  // package protected so can unit test
+  static String getXMLWords(List<? extends HasWord> sentence,
                                     int sentNum, boolean outputLemmas) {
-    boolean hasCoreLabels = (sentence != null &&
-                             sentence.size() > 0 &&
-                             sentence.get(0) instanceof CoreLabel);
+    if (sentence == null) {
+      return "";
+    }
+    boolean hasCoreLabels = sentence.size() > 0 && sentence.get(0) instanceof CoreLabel;
     StringBuilder sb = new StringBuilder();
     sb.append("<sentence id=\"").append(sentNum).append("\">\n");
     int wordIndex = 0;
     for (HasWord hw : sentence) {
       String word = hw.word();
-      if (!(hw instanceof HasTag)) {
+      if ( ! (hw instanceof HasTag)) {
         throw new IllegalArgumentException("Expected HasTags, got " +
                                            hw.getClass());
       }
       String tag = ((HasTag) hw).tag();
       sb.append("  <word wid=\"").append(wordIndex).append("\" pos=\"").append(XMLUtils.escapeAttributeXML(tag)).append("\"");
       if (outputLemmas && hasCoreLabels) {
-        if (!(hw instanceof CoreLabel)) {
+        if ( ! (hw instanceof CoreLabel)) {
           throw new IllegalArgumentException("You mixed CoreLabels with " +
                                              hw.getClass() + "?  " +
                                              "Why would you do that?");
@@ -1388,7 +1386,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
         CoreLabel label = (CoreLabel) hw;
         String lemma = label.lemma();
         if (lemma != null) {
-          sb.append(" lemma=\"").append(XMLUtils.escapeElementXML(lemma)).append('\"');
+          sb.append(" lemma=\"").append(XMLUtils.escapeAttributeXML(lemma)).append('\"');
         }
       }
       sb.append(">").append(XMLUtils.escapeElementXML(word)).append("</word>\n");
@@ -1472,8 +1470,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
    * the surrounding structure and returns tagged plain text.
    */
   public void tagFromXML(InputStream input, Writer writer, String... xmlTags) {
-    OutputStyle outputStyle =
-      OutputStyle.fromShortName(config.getOutputFormat());
+    OutputStyle outputStyle = OutputStyle.fromShortName(config.getOutputFormat());
 
     TransformXML<String> txml = new TransformXML<>();
     switch(outputStyle) {
@@ -1551,11 +1548,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
    *
    * @param config The configuration parameters for the run.
    */
-  private static void runTagger(TaggerConfig config)
-    throws IOException, ClassNotFoundException,
-           NoSuchMethodException, IllegalAccessException,
-           java.lang.reflect.InvocationTargetException
-  {
+  private static void runTagger(TaggerConfig config) throws IOException {
     if (config.getVerbose()) {
       Date now = new Date();
       log.info("## tagger invoked at " + now + " with arguments:");
@@ -1572,11 +1565,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
    * In this mode, the config contains either the name of the file to
    * tag or stdin.  That file or input is then tagged.
    */
-  private void runTagger()
-    throws IOException, ClassNotFoundException,
-           NoSuchMethodException, IllegalAccessException,
-           java.lang.reflect.InvocationTargetException
-  {
+  private void runTagger() throws IOException {
     String[] xmlInput = config.getXMLInput();
     if (xmlInput.length > 0) {
       if(xmlInput.length > 1 || !xmlInput[0].equals("null")) {
@@ -1622,8 +1611,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
   }
 
   public void runTaggerStdin(BufferedReader reader, BufferedWriter writer, OutputStyle outputStyle)
-    throws IOException
-  {
+          throws IOException {
     final TokenizerFactory<? extends HasWord> tokenizerFactory = chooseTokenizerFactory();
 
     //Counts
@@ -1685,8 +1673,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
   }
 
   public void runTaggerSGML(BufferedReader reader, BufferedWriter writer, OutputStyle outputStyle)
-    throws IOException
-  {
+          throws IOException {
     Timing t = new Timing();
 
     //Counts
@@ -1730,8 +1717,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
   public <X extends HasWord> void runTagger(Iterable<List<X>> document,
                                             BufferedWriter writer,
                                             OutputStyle outputStyle)
-    throws IOException
-  {
+          throws IOException {
     Timing t = new Timing();
 
     //Counts
@@ -1808,8 +1794,7 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
    */
   public void runTagger(BufferedReader reader, BufferedWriter writer,
                         String tagInside, OutputStyle outputStyle)
-    throws IOException
-  {
+        throws IOException {
     String sentenceDelimiter = config.getSentenceDelimiter();
     if (sentenceDelimiter != null && sentenceDelimiter.equals("newline")) {
       sentenceDelimiter = "\n";
@@ -1821,15 +1806,12 @@ public class MaxentTagger extends Tagger implements ListProcessor<List<? extends
     if (tagInside.length() > 0) {
       docProcessor = new DocumentPreprocessor(reader, DocumentPreprocessor.DocType.XML);
       docProcessor.setElementDelimiter(tagInside);
-      if (config.keepEmptySentences()) {
-        docProcessor.setKeepEmptySentences(true);
-      }
     } else {
       docProcessor = new DocumentPreprocessor(reader);
       docProcessor.setSentenceDelimiter(sentenceDelimiter);
-      if (config.keepEmptySentences()) {
-        docProcessor.setKeepEmptySentences(true);
-      }
+    }
+    if (config.keepEmptySentences()) {
+      docProcessor.setKeepEmptySentences(true);
     }
     docProcessor.setTokenizerFactory(tokenizerFactory);
 

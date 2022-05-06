@@ -39,6 +39,22 @@ public class XMLUtils  {
 
   private XMLUtils() {} // only static methods
 
+  public static DocumentBuilderFactory safeDocumentBuilderFactory() {
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    try {
+      dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      dbf.setFeature("http://apache.org/xml/features/dom/create-entity-ref-nodes", false);
+      dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException e) {
+      log.warn(e);
+    }
+    return dbf;
+  }
+    
+
   /**
    * Returns the text content of all nodes in the given file with the given tag.
    *
@@ -68,7 +84,7 @@ public class XMLUtils  {
           File f, String tag) throws SAXException {
     List<String> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -129,7 +145,7 @@ public class XMLUtils  {
           File f, String tag) throws SAXException {
     List<Element> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -207,7 +223,7 @@ public class XMLUtils  {
       File f, String tag, int numIncludedSiblings) throws SAXException {
     List<Triple<String, Element, String>> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -251,7 +267,7 @@ public class XMLUtils  {
   public static DocumentBuilder getXmlParser() {
     DocumentBuilder db = null;
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       dbf.setValidating(false);
 
       //Disable DTD loading and validation
@@ -283,9 +299,10 @@ public class XMLUtils  {
   public static DocumentBuilder getValidatingXmlParser(File schemaFile) {
     DocumentBuilder db = null;
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
 
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       Schema schema = factory.newSchema(schemaFile);
       dbf.setSchema(schema);
 
@@ -435,8 +452,9 @@ public class XMLUtils  {
       case "&apos;":
         return '\'';
       case "&ast;":
+        return '*';
       case "&sharp;":
-        return '-';
+        return '\u266F';
       case "&equals;":
         return '=';
       case "&nbsp;":
@@ -1050,7 +1068,7 @@ public class XMLUtils  {
     /** Stores the complete string passed in as the tag on construction. */
     public String text;
 
-    /** Stores the elememnt name, such as "doc". */
+    /** Stores the element name, such as "doc". */
     public String name;
 
     /** Stores attributes as a Map from keys to values. */
@@ -1205,7 +1223,8 @@ public class XMLUtils  {
 
   public static Document readDocumentFromFile(String filename) throws Exception {
     InputSource in = new InputSource(new FileReader(filename));
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory factory = safeDocumentBuilderFactory();
+
     factory.setNamespaceAware(false);
     DocumentBuilder db = factory.newDocumentBuilder();
     db.setErrorHandler(new SAXErrorHandler());
@@ -1255,7 +1274,7 @@ public class XMLUtils  {
 
   public static Document readDocumentFromString(String s) throws Exception {
     InputSource in = new InputSource(new StringReader(s));
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory factory = safeDocumentBuilderFactory();
     factory.setNamespaceAware(false);
     return factory.newDocumentBuilder().parse(in);
   }

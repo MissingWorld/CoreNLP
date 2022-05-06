@@ -327,7 +327,11 @@ public class StanfordCoreNLPServer implements Runnable {
 
         String text = IOUtils.slurpReader(IOUtils.encodedInputStreamReader(httpExchange.getRequestBody(), encoding));
         if (contentType.equals(URL_ENCODED)) {
-          text = URLDecoder.decode(text, encoding);
+          try {
+            text = URLDecoder.decode(text, encoding);
+          } catch (IllegalArgumentException e) {
+            // ignore decoding errors so that libraries which don't specify a content type might not fail
+          }
         }
         // We use to trim. But now we don't. It seems like doing that is illegitimate. text = text.trim();
 
@@ -439,6 +443,9 @@ public class StanfordCoreNLPServer implements Runnable {
           Properties languageSpecificProperties = new Properties();
           languageSpecificProperties.load(is);
           PropertiesUtils.overWriteProperties(props,languageSpecificProperties);
+          // don't enforce requirements for non-English
+          if (!LanguageInfo.getLanguageFromString(language).equals(LanguageInfo.HumanLanguage.ENGLISH))
+              props.setProperty("enforceRequirements", "false");
         } catch (IOException e) {
           err("Failure to load language specific properties: " + languagePropertiesFile + " for " + language);
         }
@@ -896,7 +903,7 @@ public class StanfordCoreNLPServer implements Runnable {
             log("[" + httpExchange.getRemoteAddress() + "] API call w/annotators " + props.getProperty("annotators", "<unknown>"));
           }
           ann = getDocument(props, httpExchange);
-          of = StanfordCoreNLP.OutputFormat.valueOf(props.getProperty("outputFormat", "json").toUpperCase());
+          of = StanfordCoreNLP.OutputFormat.valueOf(props.getProperty("outputFormat", "json").toUpperCase(Locale.ROOT));
           String text = ann.get(CoreAnnotations.TextAnnotation.class).replace('\n', ' ');
           if ( ! quiet) {
             System.out.println(text);
@@ -1163,9 +1170,9 @@ public class StanfordCoreNLPServer implements Runnable {
           // (create the matcher)
           final SemgrexPattern regex = SemgrexPattern.compile(pattern);
           final SemanticGraphCoreAnnotations.DependenciesType dependenciesType =
-            SemanticGraphCoreAnnotations.DependenciesType.valueOf(params.getOrDefault("dependenciesType", "enhancedPlusPlus").toUpperCase());
+            SemanticGraphCoreAnnotations.DependenciesType.valueOf(params.getOrDefault("dependenciesType", "enhancedPlusPlus").toUpperCase(Locale.ROOT));
 
-          StanfordCoreNLP.OutputFormat of = StanfordCoreNLP.OutputFormat.valueOf(props.getProperty("outputFormat", "json").toUpperCase());
+          StanfordCoreNLP.OutputFormat of = StanfordCoreNLP.OutputFormat.valueOf(props.getProperty("outputFormat", "json").toUpperCase(Locale.ROOT));
 
           switch(of) {
           case JSON:

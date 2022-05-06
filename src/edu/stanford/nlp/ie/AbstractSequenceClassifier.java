@@ -252,14 +252,14 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
    * edu.stanford.nlp.wordseg.Sighan2005DocumentReaderAndWriter for
    * the Chinese Segmenter.
    */
-  public DocumentReaderAndWriter<IN> makePlainTextReaderAndWriter() {
+  public static <INN extends CoreMap> DocumentReaderAndWriter<INN> makePlainTextReaderAndWriter(SeqClassifierFlags flags) {
     String readerClassName = flags.plainTextDocumentReaderAndWriter;
     // We set this default here if needed because there may be models
     // which don't have the reader flag set
     if (readerClassName == null) {
       readerClassName = SeqClassifierFlags.DEFAULT_PLAIN_TEXT_READER;
     }
-    DocumentReaderAndWriter<IN> readerAndWriter;
+    DocumentReaderAndWriter<INN> readerAndWriter;
     try {
       readerAndWriter = ReflectionLoading.loadByReflection(readerClassName);
     } catch (Exception e) {
@@ -267,6 +267,10 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
     }
     readerAndWriter.init(flags);
     return readerAndWriter;
+  }
+
+  public DocumentReaderAndWriter<IN> makePlainTextReaderAndWriter() {
+    return makePlainTextReaderAndWriter(flags);
   }
 
   /**
@@ -579,8 +583,7 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
    * is used by default.
    * Output looks like: My/O name/O is/O Bill/PERSON Smith/PERSON ./O
    *
-   * @param sentences
-   *          The String to be classified
+   * @param sentences The String to be classified
    * @return A String annotated with classification information.
    */
   public String classifyToString(String sentences) {
@@ -1495,6 +1498,7 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
    */
   public void loadClassifier(String loadPath) throws ClassCastException, IOException, ClassNotFoundException {
     loadClassifier(loadPath, null);
+    flags.loadClassifier = loadPath;
   }
 
   /**
@@ -1505,6 +1509,7 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
     try (InputStream is = IOUtils.getInputStreamFromURLOrClasspathOrFileSystem(loadPath)) {
       Timing t = new Timing();
       loadClassifier(is, props);
+      flags.loadClassifier = loadPath;
       t.done(log, "Loading classifier from " + loadPath);
     }
   }
@@ -1525,6 +1530,7 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
 
   public void loadClassifier(File file) throws ClassCastException, IOException, ClassNotFoundException {
     loadClassifier(file, null);
+    flags.loadClassifier = file.toString();
   }
 
   /**
@@ -1551,6 +1557,7 @@ public abstract class AbstractSequenceClassifier<IN extends CoreMap> implements 
     }
     try {
       loadClassifier(bis, props);
+      flags.loadClassifier = file.toString();
       t.done(log, "Loading classifier from " + file.getAbsolutePath());
     } finally {
       bis.close();

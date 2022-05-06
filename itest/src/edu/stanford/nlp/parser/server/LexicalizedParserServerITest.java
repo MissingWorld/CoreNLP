@@ -15,6 +15,7 @@ import edu.stanford.nlp.parser.common.ParserGrammar;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.parser.shiftreduce.ShiftReduceParser;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.util.TestPaths;
 
 
 // TODO: tests should fail if a query causes the server to crash.  Right now it just hangs.
@@ -25,12 +26,12 @@ public class LexicalizedParserServerITest {
 
   static final String lexmodel = LexicalizedParser.DEFAULT_PARSER_LOC;
 
-  static final String srmodel = "/u/nlp/data/srparser/englishSR.ser.gz";
-  static final String tagger = "/u/nlp/data/pos-tagger/distrib/wsj-0-18-left3words-distsim.tagger";
+  static final String srmodel = "edu/stanford/nlp/models/srparser/englishSR.ser.gz";
+  static final String tagger = "edu/stanford/nlp/models/pos-tagger/english-left3words-distsim.tagger";
 
   static final String testString = "John Bauer works at Stanford.";
   static final String resultString = "(ROOT (S (NP (NNP John) (NNP Bauer)) (VP (VBZ works) (PP (IN at) (NP (NNP Stanford)))) (. .)))";
-  static final String binarizedResultString = "(ROOT (S (NP (NNP John) (NNP Bauer)) (@S (VP (VBZ works) (PP (IN at) (NP (NNP Stanford)))) (. .))))";
+  static final String binarizedResultString = "(ROOT (S (@S (NP (NNP John) (NNP Bauer)) (VP (VBZ works) (PP (IN at) (NP (NNP Stanford))))) (. .)))";
   static final String collapsedTreeStanfordDependenciesString =
     ("nn(Bauer-2, John-1)\n" +
      "nsubj(works-3, Bauer-2)\n" +

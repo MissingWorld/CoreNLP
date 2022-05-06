@@ -3,6 +3,7 @@ import edu.stanford.nlp.util.logging.Redwood;
 
 import edu.stanford.nlp.ling.CategoryWordTag;
 import edu.stanford.nlp.ling.HasTag;
+import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.parser.metrics.AbstractEval;
@@ -203,6 +204,9 @@ public abstract class AbstractTreebankParserParams implements TreebankLangParser
     return inputEncoding;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public abstract TreeReaderFactory treeReaderFactory();
 
   /**
    * Returns a language specific object for evaluating PP attachment
@@ -215,16 +219,27 @@ public abstract class AbstractTreebankParserParams implements TreebankLangParser
   }
 
   /**
-   * returns a MemoryTreebank appropriate to the treebank source
+   * Allows you to read in trees from the source you want.  It's the
+   * responsibility of treeReaderFactory() to deal properly with character-set
+   * encoding of the input.  It also is the responsibility of tr to properly
+   * normalize trees.
    */
   @Override
-  public abstract MemoryTreebank memoryTreebank();
+  public DiskTreebank diskTreebank() {
+    return new DiskTreebank(treeReaderFactory(), getInputEncoding());
+  }
+
 
   /**
-   * returns a DiskTreebank appropriate to the treebank source
+   * Allows you to read in trees from the source you want.  It's the
+   * responsibility of treeReaderFactory() to deal properly with character-set
+   * encoding of the input.  It also is the responsibility of tr to properly
+   * normalize trees.
    */
   @Override
-  public abstract DiskTreebank diskTreebank();
+  public MemoryTreebank memoryTreebank() {
+    return new MemoryTreebank(treeReaderFactory(), getInputEncoding());
+  }
 
   /**
    * You can often return the same thing for testMemoryTreebank as
@@ -615,6 +630,10 @@ public abstract class AbstractTreebankParserParams implements TreebankLangParser
   public int setOptionFlag(String[] args, int i) {
     return i;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public abstract List<? extends HasWord> defaultTestSentence();
 
   private static final long serialVersionUID = 4299501909017975915L;
 

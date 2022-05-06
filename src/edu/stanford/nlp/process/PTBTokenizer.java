@@ -75,9 +75,9 @@ import edu.stanford.nlp.util.logging.Redwood;
  *     perhaps CharacterOffsetBeginAnnotation and CharacterOffsetEndAnnotation to record
  *     token begin/after end character offsets, if they were specified to be recorded
  *     in TokenFactory construction.  (Like the String class, begin and end
- *     are done so end - begin gives the token length.) Default is false.
+ *     are done so end - begin gives the token length.) Default is false. </li>
  * <li>tokenizeNLs: Whether end-of-lines should become tokens (or just
- *     be treated as part of whitespace). Default is false.
+ *     be treated as part of whitespace). Default is false. </li>
  * <li>tokenizePerLine: Run the tokenizer separately on each line of a file.
  *     This has the following consequences: (i) A token (currently only SGML tokens)
  *     cannot span multiple lines of the original input, and (ii) The tokenizer will not
@@ -90,29 +90,29 @@ import edu.stanford.nlp.util.logging.Redwood;
  *     sets or clears all the options below. Note that because properties are set in a Map,
  *     if you specify both this flag and flags it sets, the resulting behaviour is non-deterministic (sorry!).
  *     (Default setting of the various properties below that this flag controls is equivalent to it being set
- *     to true.)
+ *     to true.) </li>
  * <li>ud: [From CoreNLP 4.0] Enable options that make tokenization like what is used in UD v2. This is a
  *     macro flag that sets various of the options below. It ignores a value for this key.
  *     Note that because properties are set in a Map, if you specify both this flag and flags it sets,
- *     the resulting behaviour is non-deterministic (sorry!).</li>
+ *     the resulting behaviour is non-deterministic (sorry!). </li>
  * <li>americanize: Whether to rewrite common British English spellings
  *     as American English spellings. (This is useful if your training
  *     material uses American English spelling, such as the Penn Treebank.)
- *     Default is true.
+ *     Default is true. </li>
  * <li>normalizeSpace: Whether any spaces in tokens (phone numbers, fractions
  *     get turned into U+00A0 (non-breaking space).  It's dangerous to turn
  *     this off for most of our Stanford NLP software, which assumes no
- *     spaces in tokens. Default is true.
+ *     spaces in tokens. Default is true. </li>
  * <li>normalizeAmpersandEntity: Whether to map the XML {@code &amp;} to an
- *      ampersand. Default is true.
+ *      ampersand. Default is true. </li>
  * <li>normalizeFractions: Whether to map certain common composed
  *     fraction characters to spelled out letter forms like "1/2".
- *     Default is true.
+ *     Default is true. </li>
  * <li>normalizeParentheses: Whether to map round parentheses to -LRB-,
- *     -RRB-, as in the Penn Treebank. Default is true.
+ *     -RRB-, as in the Penn Treebank. Default is true. </li>
  * <li>normalizeOtherBrackets: Whether to map other common bracket characters
  *     to -LCB-, -LRB-, -RCB-, -RRB-, roughly as in the Penn Treebank.
- *     Default is true.
+ *     Default is true. </li>
  * <li>quotes: [From CoreNLP 4.0] Select a style of mapping quotes. An enum with possible values (case insensitive):
  *     latex, unicode, ascii, not_cp1252, original. "ascii" maps all quote characters to the traditional ' and ".
  *     "latex" maps quotes to ``, `, ', '', as in Latex and the PTB3 WSJ (though this is now heavily frowned on in Unicode).
@@ -134,19 +134,19 @@ import edu.stanford.nlp.util.logging.Redwood;
  * <li>escapeForwardSlashAsterisk: Whether to put a backslash escape in front
  *     of / and * as the old PTB3 WSJ does for some reason (something to do
  *     with Lisp readers??). Default is false. This flag is no longer set
- *     by ptb3Escaping.
+ *     by ptb3Escaping. </li>
  * <li>normalizeCurrency: Whether to do some awful lossy currency mappings
  *     to turn common currency characters into $, #, or "cents", reflecting
  *     the fact that nothing else appears in the old PTB3 WSJ.  (No Euro!)
  *     Default is false. (Note: The default was true through CoreNLP v3.8.0, but we're
  *     gradually inching our way towards the modern world!) This flag is no longer set
- *     by ptb3Escaping.
+ *     by ptb3Escaping. </li>
  * <li>untokenizable: What to do with untokenizable characters (ones not
  *     known to the tokenizer).  Six options combining whether to log a
  *     warning for none, the first, or all, and whether to delete them or
  *     to include them as single character tokens in the output: noneDelete,
  *     firstDelete, allDelete, noneKeep, firstKeep, allKeep.
- *     The default is "firstDelete".
+ *     The default is "firstDelete". </li>
  * <li>strictTreebank3: PTBTokenizer deliberately deviates from strict PTB3
  *      WSJ tokenization in two cases.  Setting this improves compatibility
  *      for those cases.  They are: (i) When an acronym is followed by a
@@ -158,15 +158,15 @@ import edu.stanford.nlp.util.logging.Redwood;
  *      while the PTB3 separates them into two tokens "5" and "7/8".
  *      (Exception: for only "U.S." the treebank does have the two tokens
  *      "U.S." and "." like our default; strictTreebank3 now does that too.)
- *      The default is false.
- * <li>strictAcronym: control only the acronym portion of strictTreebank3
- * <li>strictFraction: control only the fraction portion of strictTreebank3
- *  <li>splitHyphenated: whether or not to tokenize segments of hyphenated words
+ *      The default is false. </li>
+ * <li>strictAcronym: control only the acronym portion of strictTreebank3. </li>
+ * <li>strictFraction: control only the fraction portion of strictTreebank3. </li>
+ * <li>splitHyphenated: whether or not to tokenize segments of hyphenated words
  *      separately ("school" "-" "aged", "frog" "-" "lipped"), keeping the exceptions
  *      in Supplementary Guidelines for ETTB 2.0 by Justin Mott, Colin Warner, Ann Bies,
  *      Ann Taylor and CLEAR guidelines (Bracketing Biomedical Text) by Colin Warner et al. (2012).
- *      Default is false, which maintains old treebank tokenizer behavior.
- *  <li>splitForwardSlash: [From CoreNLP 4.0] Whether to tokenize segments of slashed tokens separately
+ *      Default is false, which maintains old treebank tokenizer behavior. </li>
+ * <li>splitForwardSlash: [From CoreNLP 4.0] Whether to tokenize segments of slashed tokens separately
  *      ("Asian" "/" "Indian", "and" "/" "or"). Default is false. </li>
  * </ol>
  * <p>
@@ -187,7 +187,7 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
   /** A logger for this class */
   private static final Redwood.RedwoodChannels log = Redwood.channels(PTBTokenizer.class);
 
-  // the underlying lexer
+  /** The underlying lexer */
   private final PTBLexer lexer;
 
 
@@ -291,6 +291,7 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
    *
    * @return the next token in the token stream, or null if none exists.
    */
+  @SuppressWarnings({"unchecked"})
   @Override
   protected T getNext() {
     // if (lexer == null) {
@@ -363,8 +364,8 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
    * the tokens with space and run it through this method to produce nice
    * looking text. It's not perfect, but it works pretty well.
    */
-  public static int ptb2Text(Reader ptbText, Writer w) throws IOException {
-    int numTokens = 0;
+  public static long ptb2Text(Reader ptbText, Writer w) throws IOException {
+    long numTokens = 0;
     PTB2TextLexer lexer = new PTB2TextLexer(ptbText);
     for (String token; (token = lexer.next()) != null; ) {
       numTokens++;
@@ -375,7 +376,7 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
 
   private static void untok(List<String> inputFileList, List<String> outputFileList, String charset) throws IOException {
     final long start = System.nanoTime();
-    int numTokens = 0;
+    long numTokens = 0;
     int sz = inputFileList.size();
     if (sz == 0) {
       Reader r = new InputStreamReader(System.in, charset);
@@ -439,7 +440,8 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
 
   private static void tok(List<String> inputFileList, List<String> outputFileList, String charset,
                           Pattern parseInsidePattern, Pattern filterPattern, String options,
-                          boolean preserveLines, boolean oneLinePerElement, boolean dump, boolean lowerCase) throws IOException {
+                          boolean preserveLines, boolean oneLinePerElement, boolean dump,
+                          boolean lowerCase, boolean blankLineAfterFiles) throws IOException {
     final long start = System.nanoTime();
     long numTokens = 0;
     int numFiles = inputFileList.size();
@@ -461,6 +463,9 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
           }
           numTokens += tokReader(r, out, parseInsidePattern, filterPattern, options, preserveLines, oneLinePerElement, dump, lowerCase);
         }
+        if (blankLineAfterFiles) {
+          out.newLine();
+        }
         if (outputFileList != null) {
           IOUtils.closeIgnoringExceptions(out);
         }
@@ -475,9 +480,9 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
     System.err.printf("PTBTokenizer tokenized %d tokens at %.2f tokens per second.%n", numTokens, wordsPerSec);
   }
 
-  private static int tokReader(Reader r, BufferedWriter writer, Pattern parseInsidePattern, Pattern filterPattern, String options,
+  private static long tokReader(Reader r, BufferedWriter writer, Pattern parseInsidePattern, Pattern filterPattern, String options,
                                boolean preserveLines, boolean oneLinePerElement, boolean dump, boolean lowerCase) throws IOException {
-    int numTokens = 0;
+    long numTokens = 0;
     boolean beginLine = true;
     boolean printing = (parseInsidePattern == null); // start off printing, unless you're looking for a start entity
     Matcher m = null;
@@ -731,6 +736,7 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
     optionArgDefs.put("filter", 1);
     optionArgDefs.put("preserveLines", 0);
     optionArgDefs.put("oneLinePerElement", 0);
+    optionArgDefs.put("blankLineAfterFiles", 0);
     return optionArgDefs;
   }
 
@@ -746,33 +752,35 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
    * Options:
    * <ul>
    * <li> -options options Set various tokenization options
-   *       (see the documentation in the class javadoc).
+   *       (see the documentation in the class javadoc). </li>
    * <li> -preserveLines Produce space-separated tokens, except
-   *       when the original had a line break, not one-token-per-line.
+   *       when the original had a line break, not one-token-per-line. </li>
    * <li> -oneLinePerElement Print the tokens of an element space-separated on one line.
    *       An "element" is either a file or one of the elements matched by the
    *       parseInside regex. </li>
+   * <li> -blankLineAfterFiles Put a blank line after each input file
+   *      (including after just a single input file but not at the end of input from stdin). </li>
    * <li> -filter regex Delete any token that matches() (in its entirety) the given regex. </li>
    * <li> -encoding encoding Specifies a character encoding. If you do not
-   *      specify one, the default is utf-8 (not the platform default).
-   * <li> -lowerCase Lowercase all tokens (on tokenization).
+   *      specify one, the default is utf-8 (not the platform default). </li>
+   * <li> -lowerCase Lowercase all tokens (on tokenization). </li>
    * <li> -parseInside regex Names an XML-style element or a regular expression
    *      over such elements.  The tokenizer will only tokenize inside elements
    *      that match this regex.  (This is done by regex matching, not an XML
    *      parser, but works well for simple XML documents, or other SGML-style
    *      documents, such as Linguistic Data Consortium releases, which adopt
    *      the convention that a line of a file is either XML markup or
-   *      character data but never both.)
+   *      character data but never both.) </li>
    * <li> -ioFileList file* The remaining command-line arguments are treated as
    *      filenames that themselves contain lists of pairs of input-output
    *      filenames (2 column, whitespace separated). Alternatively, if there is only
-   *      one filename per line, the output filename is the input filename with ".tok" appended.
+   *      one filename per line, the output filename is the input filename with ".tok" appended. </li>
    * <li> -fileList file* The remaining command-line arguments are treated as
    *      filenames that contain filenames, one per line. The output of tokenization is sent to
-   *      stdout.
-   * <li> -dump Print the whole of each CoreLabel, not just the value (word).
-   * <li> -untok Heuristically untokenize tokenized text.
-   * <li> -h, -help Print usage info.
+   *      stdout. </li>
+   * <li> -dump Print the whole of each CoreLabel, not just the value (word). </li>
+   * <li> -untok Heuristically untokenize tokenized text. </li>
+   * <li> -h, -help Print usage info. </li>
    * </ul>
    * <p>
    * A note on {@code -preserveLines}: Basically, if you use this option, your output file should have
@@ -816,6 +824,7 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
     if (preserveLines) {
       optionsSB.append(",tokenizeNLs");
     }
+    boolean blankLineAfterFiles = PropertiesUtils.getBool(options, "blankLineAfterFiles", false);
     boolean oneLinePerElement = PropertiesUtils.getBool(options, "oneLinePerElement", false);
     boolean inputOutputFileList = PropertiesUtils.getBool(options, "ioFileList", false);
     boolean fileList = PropertiesUtils.getBool(options, "fileList", false);
@@ -878,7 +887,8 @@ public class PTBTokenizer<T extends HasWord> extends AbstractTokenizer<T>  {
     if (untok) {
       untok(inputFileList, outputFileList, charset);
     } else {
-      tok(inputFileList, outputFileList, charset, parseInsidePattern, filterPattern, optionsSB.toString(), preserveLines, oneLinePerElement, dump, lowerCase);
+      tok(inputFileList, outputFileList, charset, parseInsidePattern, filterPattern, optionsSB.toString(),
+              preserveLines, oneLinePerElement, dump, lowerCase, blankLineAfterFiles);
     }
   } // end main
 

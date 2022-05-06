@@ -79,11 +79,16 @@ public interface Annotator {
    */
   Set<Class<? extends CoreAnnotation>> requires();
 
+  default Collection<String> exactRequirements() {
+    return null;
+  }
+
   /**
    * These are annotators which StanfordCoreNLP knows how to create.
    * Add new annotators and/or annotators from other groups here!
    */
   String STANFORD_TOKENIZE = "tokenize";
+  String STANFORD_CDC_TOKENIZE = "cdc_tokenize";
   String STANFORD_CLEAN_XML = "cleanxml";
   String STANFORD_SSPLIT = "ssplit";
   String STANFORD_MWT = "mwt";
@@ -122,6 +127,7 @@ public interface Annotator {
   @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
   Map<String, Set<String>> DEFAULT_REQUIREMENTS = new HashMap<String, Set<String>>(){{
     put(STANFORD_TOKENIZE,                 new LinkedHashSet<>(Arrays.asList()));
+    put(STANFORD_CDC_TOKENIZE,             new LinkedHashSet<>(Arrays.asList()));
     put(STANFORD_CLEAN_XML,                new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE)));
     put(STANFORD_SSPLIT,                   new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE)));
     put(STANFORD_MWT,                      new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT)));
@@ -137,7 +143,7 @@ public interface Annotator {
     put(STANFORD_PARSE,                    new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS)));
     put(STANFORD_DETERMINISTIC_COREF,      new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_LEMMA, STANFORD_NER, STANFORD_PARSE)));
     put(STANFORD_COREF,                    new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_LEMMA, STANFORD_NER, STANFORD_DEPENDENCIES)));
-    put(STANFORD_COREF_MENTION,                  new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_LEMMA, STANFORD_NER, STANFORD_DEPENDENCIES)));
+    put(STANFORD_COREF_MENTION,            new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_LEMMA, STANFORD_NER, STANFORD_DEPENDENCIES)));
     put(STANFORD_RELATION,                 new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_LEMMA, STANFORD_NER, STANFORD_PARSE, STANFORD_DEPENDENCIES)));
     put(STANFORD_SENTIMENT,                new LinkedHashSet<>(Arrays.asList(STANFORD_TOKENIZE, STANFORD_SSPLIT, STANFORD_POS, STANFORD_PARSE)));
     put(STANFORD_COLUMN_DATA_CLASSIFIER,   new LinkedHashSet<>(Arrays.asList()));

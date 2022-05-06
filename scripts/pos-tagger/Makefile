@@ -9,14 +9,18 @@ ENGLISH_TEST = /u/nlp/data/pos-tagger/english/test-wsj-19-21
 
 FRENCH_TEST = format=TREES,/u/nlp/data/lexparser/trees/FrenchCC/FTB-Test.utf8.txt
 
-GERMAN_TEST = format=TREES,trf=edu.stanford.nlp.trees.international.negra.NegraPennTreeReaderFactory,/u/nlp/data/GermanACL08/negra/negra_3.mrg
+GERMAN_TEST = format=TSV,wordColumn=1,tagColumn=3,comments=True,/u/nlp/software/CoreNLP-models/de/pos/german-ud/4.3.0/de_gsd-ud-test.conllu
+
+HUNGARIAN_TEST = format=TSV,comments=true,wordColumn=1,tagColumn=3,/u/nlp/software/CoreNLP-models/hu/pos/4.3.0/hu_szeged-ud-test.conllu
+
+ITALIAN_TEST = format=TSV,comments=true,wordColumn=1,tagColumn=3,/u/nlp/software/CoreNLP-models/it/pos/4.3.0/it_isdt-ud-test.conllu
 
 SPANISH_TEST = format=TREES,/u/nlp/data/spanish/ancora/ancora.test,/u/nlp/data/spanish/ldc/ldc-NW.test,/u/nlp/data/spanish/ldc/ldc-DF.test
 
 .SECONDEXPANSION:
 
-all: arabic chinese english french german spanish testing wsj
-.PHONY: all arabic chinese english french german spanish testing wsj
+all: arabic chinese english french german hungarian italian spanish testing wsj
+.PHONY: all arabic chinese english french german hungarian italian spanish testing wsj
 
 arabic: arabic.tagger  arabic-train.tagger
 
@@ -52,13 +56,31 @@ french.tagger: $$@.props
 	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -props $@.props > $@.out 2>&1
 	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -model $@ -testFile $(FRENCH_TEST)  -verboseResults false >> $@.out 2>&1
 
-german: german-dewac.tagger german-fast.tagger german-fast-caseless.tagger german-hgc.tagger
+# TODO: people might still appreciate a fast tagger?
+german: german-ud.tagger
 
-german-dewac.tagger german-fast.tagger german-fast-caseless.tagger german-hgc.tagger: $$@.props
+german-ud.tagger: $$@.props
 	@echo Training $@
 	@echo Will test on $(GERMAN_TEST)
 	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -props $@.props > $@.out 2>&1
 	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -model $@ -testFile $(GERMAN_TEST)  -verboseResults false >> $@.out 2>&1
+
+hungarian: hungarian.tagger
+
+hungarian.tagger: $$@.props
+	@echo Training $@
+	@echo Will test on $(HUNGARIAN_TEST)
+	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -props $@.props > $@.out 2>&1
+	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -model $@ -testFile $(HUNGARIAN_TEST)  -verboseResults false >> $@.out 2>&1
+
+italian: italian.tagger
+
+italian.tagger: $$@.props
+	@echo Training $@
+	@echo Will test on $(ITALIAN_TEST)
+	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -props $@.props > $@.out 2>&1
+	java -mx6g edu.stanford.nlp.tagger.maxent.MaxentTagger -model $@ -testFile $(ITALIAN_TEST)  -verboseResults false >> $@.out 2>&1
+
 
 spanish: spanish.tagger spanish-distsim.tagger
 

@@ -41,6 +41,25 @@ LICENSE
 CHANGES
 ---------------------------------
 
+2022-01-20    4.4.0     Fix issue with Italian depparse, tsurgeon CLI, 
+                        fix security issues, bug fixes 
+
+2021-10-14    4.3.1     Minor bugfixes to German umlaut tokenization,
+                        CDC tokenizer offset, Hungarian model package
+
+2021-09-26    4.3.0     Add trained tokenizer from corenlp-it, add 
+                        Italian and Hungarian pipelines using data 
+                        from FBK, UD, Szeged, NYTK, and SPMRL.  Better 
+                        emoji support in the PTB tokenizer 
+
+2021-05-14    4.2.2     Fix issue with demo. 
+
+2021-05-05    4.2.1     Fix Turkish locale bug, QuoteAnnotator crash
+                        fixes, smaller srparser models, improvements
+                        to enhanced UD converter, Updated dependencies
+                        (istack, protobuf), batch processing of
+                        semgrex & enhancer requests when using stanza
+
 2020-11-16    4.2.0     Bug fixes, Retrained English parser models 
                         with improved trees, Updated dependencies 
                         (ejml, junit, jflex), Speed up loading 

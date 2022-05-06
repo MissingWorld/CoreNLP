@@ -48,7 +48,7 @@ import edu.stanford.nlp.parser.lexparser.TreebankLangParserParams;
  *
  * @author John Bauer
  */
-public abstract class ParserGrammar implements Function<List<? extends HasWord>, Tree> {
+public abstract class ParserGrammar implements Function<List<? extends HasWord>, Tree>, ParserQueryFactory {
 
   private static Redwood.RedwoodChannels logger = Redwood.channels(ParserGrammar.class);
 
@@ -210,21 +210,21 @@ public abstract class ParserGrammar implements Function<List<? extends HasWord>,
     try {
       File file = new File(zipFilename);
       if (file.exists()) {
-        ZipFile zin = new ZipFile(file);
-        ZipEntry zentry = zin.getEntry(modelName);
-        if (zentry != null) {
-          InputStream in = zin.getInputStream(zentry);
-          // gunzip it if necessary
-          if (modelName.endsWith(".gz")) {
-            in = new GZIPInputStream(in);
+        try (ZipFile zin = new ZipFile(file)) {
+          ZipEntry zentry = zin.getEntry(modelName);
+          if (zentry != null) {
+            InputStream in = zin.getInputStream(zentry);
+            // gunzip it if necessary
+            if (modelName.endsWith(".gz")) {
+              in = new GZIPInputStream(in);
+            }
+            ObjectInputStream ois = new ObjectInputStream(in);
+            object = ois.readObject();
+
+            ois.close();
+            in.close();
           }
-          ObjectInputStream ois = new ObjectInputStream(in);
-          object = ois.readObject();
-          
-          ois.close();
-          in.close();
         }
-        zin.close();
       } else {
         throw new FileNotFoundException("Could not find " + modelName +
                                         " inside " + zipFilename);

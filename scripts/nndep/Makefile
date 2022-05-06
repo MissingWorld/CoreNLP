@@ -1,5 +1,6 @@
 ENGLISH_EMBEDDINGS=/u/nlp/data/depparser/nn/data/embeddings/en-cw.txt
 CHINESE_EMBEDDINGS=/u/nlp/data/depparser/nn/data/embeddings/zh-word2vec.txt
+ITALIAN_EMBEDDINGS=/u/nlp/software/CoreNLP-models/it/depparse/4.3.0/it.embedding.txt
 
 DATA_DIR=/u/nlp/data/dependency_treebanks
 
@@ -28,6 +29,9 @@ UD_FRENCH_TRAIN=${DATA_DIR}/UD/1.1/fr/fr-ud-train-clean.conllu
 UD_FRENCH_DEV=${DATA_DIR}/UD/1.1/fr/fr-ud-dev-clean.conllu
 UD_FRENCH_TEST=${DATA_DIR}/UD/1.1/fr/fr-ud-test-clean.conllu
 
+UD_ITALIAN_TRAIN = /u/nlp/software/CoreNLP-models/it/depparse/4.3.0/it_isdt-ud-train.conllu
+UD_ITALIAN_DEV   = /u/nlp/software/CoreNLP-models/it/depparse/4.3.0/it_isdt-ud-dev.conllu
+UD_ITALIAN_TEST  = /u/nlp/software/CoreNLP-models/it/depparse/4.3.0/it_isdt-ud-test.conllu
 
 PTB_Stanford:
 	java edu.stanford.nlp.parser.nndep.DependencyParser -props nndep.properties -trainFile $(PTB_STANFORD_TRAIN) -devFile $(PTB_STANFORD_DEV) -embedFile $(ENGLISH_EMBEDDINGS) -model $@.txt.gz > $@.log 2>&1
@@ -61,4 +65,9 @@ UD_FRENCH:
 	java edu.stanford.nlp.parser.nndep.DependencyParser -props nndep.properties -trainFile $(UD_FRENCH_TRAIN) -language German -devFile $(UD_FRENCH_DEV) -model $@.txt.gz >> $@.log 2>&1
 	java edu.stanford.nlp.parser.nndep.DependencyParser -testFile $(UD_FRENCH_DEV) -language French -model $@.txt.gz -outFile $@.out.dev >> $@.log 2>&1
 	java edu.stanford.nlp.parser.nndep.DependencyParser -testFile $(UD_FRENCH_TEST) -language French -model $@.txt.gz -outFile $@.out.test >> $@.log 2>&1
+
+UD_ITALIAN:
+	java edu.stanford.nlp.parser.nndep.DependencyParser -props nndep.properties -trainFile $(UD_ITALIAN_TRAIN) -language Italian -devFile $(UD_ITALIAN_DEV) -embedFile $(ITALIAN_EMBEDDINGS) -embeddingSize 100  -model $@.txt.gz >> $@.log 2>&1
+	java edu.stanford.nlp.parser.nndep.DependencyParser -testFile $(UD_ITALIAN_DEV) -language Italian -model $@.txt.gz -outFile $@.out.dev >> $@.log 2>&1
+	java edu.stanford.nlp.parser.nndep.DependencyParser -testFile $(UD_ITALIAN_TEST) -language Italian -model $@.txt.gz -outFile $@.out.test >> $@.log 2>&1
 

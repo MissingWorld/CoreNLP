@@ -230,6 +230,31 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
     }
     this.properties = props;  // from now on we use this.properties
 
+    // alter annotator list if preTokenized option is set
+    // preTokenized means just split input text on white space and one sentence per line
+    if (PropertiesUtils.getBool(this.properties, ("preTokenized"))) {
+      this.properties.setProperty("tokenize.whitespace", "true");
+      this.properties.setProperty("ssplit.eolonly", "true");
+      String oldAnnotators = this.properties.getProperty("annotators").replaceAll("\\s+", "");
+      String newAnnotators = oldAnnotators;
+      if (oldAnnotators != null && oldAnnotators.startsWith("cdc_tokenize")) {
+        newAnnotators = "tokenize,ssplit" + oldAnnotators.substring(12,oldAnnotators.length());
+        logger.info("preTokenized option set: Changing annotators cdc_tokenize to tokenize,ssplit");
+      } else if (oldAnnotators != null && oldAnnotators.startsWith("tokenize,ssplit,mwt")) {
+        newAnnotators = "tokenize,ssplit" + oldAnnotators.substring(19,oldAnnotators.length());
+        logger.info("preTokenized option set: Changing annotators tokenize,ssplit,mwt to tokenize,ssplit");
+      } else if (oldAnnotators != null && oldAnnotators.startsWith("tokenize,ssplit")) {
+        logger.info("preTokenized option set: Annotators list starts with tokenize,ssplit, no change needed.");
+      } else if (oldAnnotators != null && !oldAnnotators.contains("tokenize") && !oldAnnotators.contains("mwt")
+                 && !oldAnnotators.contains("ssplit") && !oldAnnotators.contains("cdc_tokenize")) {
+        logger.info("preTokenized option set: Adding tokenize,ssplit to beginning.");
+        newAnnotators = "tokenize,ssplit," + oldAnnotators;
+      } else {
+        logger.warn("preTokenized option set: Non-standard annotators list, preTokenized may not work in this case."); 
+      }
+      this.properties.setProperty("annotators", newAnnotators);
+    }
+
     // cdm [2017]: constructAnnotatorPool (PropertiesUtils.getSignature) requires non-null Properties, so after properties setup
     this.pool = annotatorPool != null ? annotatorPool : constructAnnotatorPool(props, getAnnotatorImplementations());
 
@@ -258,10 +283,11 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
         for (Class<? extends CoreAnnotation> requirement : allRequirements) {
           if (!requirementsSatisfied.contains(requirement)) {
             String fmt = "annotator \"%s\" requires annotation \"%s\". The usual requirements for this annotator are: %s";
-            throw new IllegalArgumentException(
-                String.format(fmt, name, requirement.getSimpleName(),
-                    StringUtils.join(Annotator.DEFAULT_REQUIREMENTS.getOrDefault(name, Collections.singleton("unknown")), ",")
-                ));
+            Collection<String> defaultRequirements = an.exactRequirements();
+            if (defaultRequirements == null) {
+              defaultRequirements = Annotator.DEFAULT_REQUIREMENTS.getOrDefault(name, Collections.singleton("unknown"));
+            }
+            throw new IllegalArgumentException(String.format(fmt, name, requirement.getSimpleName(), StringUtils.join(defaultRequirements, ",")));
           }
         }
         requirementsSatisfied.addAll(an.requirementsSatisfied());
@@ -532,6 +558,7 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
   private static Map<String, BiFunction<Properties, AnnotatorImplementations, Annotator>> getNamedAnnotators() {
     Map<String, BiFunction<Properties, AnnotatorImplementations, Annotator>> pool = new HashMap<>();
     pool.put(STANFORD_TOKENIZE, (props, impl) -> impl.tokenizer(props));
+    pool.put(STANFORD_CDC_TOKENIZE, (props, impl) -> impl.cdcTokenizer(props));
     pool.put(STANFORD_CLEAN_XML, (props, impl) -> impl.cleanXML(props));
     pool.put(STANFORD_SSPLIT, (props, impl) -> impl.wordToSentences(props));
     pool.put(STANFORD_MWT, (props, impl) -> impl.multiWordToken(props));
@@ -1019,7 +1046,7 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
                                        Properties properties,
                                        AnnotationOutputter.Options outputOptions) throws IOException {
     final OutputFormat outputFormat =
-            OutputFormat.valueOf(properties.getProperty("outputFormat", DEFAULT_OUTPUT_FORMAT).toUpperCase());
+            OutputFormat.valueOf(properties.getProperty("outputFormat", DEFAULT_OUTPUT_FORMAT).toUpperCase(Locale.ROOT));
 
     switch (outputFormat) {
       case XML:
@@ -1091,7 +1118,7 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
    */
   public void processFiles(String base, final Collection<File> files, int numThreads, boolean clearPool, Optional<Timing> tim) throws IOException {
     AnnotationOutputter.Options options = AnnotationOutputter.getOptions(properties);
-    StanfordCoreNLP.OutputFormat outputFormat = StanfordCoreNLP.OutputFormat.valueOf(properties.getProperty("outputFormat", DEFAULT_OUTPUT_FORMAT).toUpperCase());
+    StanfordCoreNLP.OutputFormat outputFormat = StanfordCoreNLP.OutputFormat.valueOf(properties.getProperty("outputFormat", DEFAULT_OUTPUT_FORMAT).toUpperCase(Locale.ROOT));
     processFiles(base, files, numThreads, properties, this::annotate, createOutputter(properties, options), outputFormat, clearPool, Optional.of(this), tim);
   }
 

@@ -168,6 +168,19 @@ public class RegexNERSequenceClassifier extends AbstractSequenceClassifier<CoreL
     // log.info("RegexNER using labels: " + myLabels);
   }
 
+  /**
+   * Most AbstractSequenceClassifiers have classIndex set.
+   * ClassifierCombiner calls labels() to get the values from the
+   * index.
+   * <br>
+   * TODO: chceck that classIndex isn't used anywhere other than the
+   * call to labels()
+   */
+  @Override
+  public Set<String> labels() {
+    return myLabels;
+  }
+
   private static class Entry implements Comparable<Entry> {
     public List<Pattern> regex; // the regex, tokenized by splitting on white space
     public List<String> exact = new ArrayList<>();
@@ -262,6 +275,10 @@ public class RegexNERSequenceClassifier extends AbstractSequenceClassifier<CoreL
     int lineCount = 0;
     for (String line; (line = mapping.readLine()) != null; ) {
       lineCount ++;
+      // skip blank lines
+      if (line.trim().equals(""))
+        continue;
+
       String[] split = line.split("\t");
       if (split.length < 2 || split.length > 4)
         throw new IllegalArgumentException("Provided mapping file is in wrong format: " + line);
@@ -275,6 +292,8 @@ public class RegexNERSequenceClassifier extends AbstractSequenceClassifier<CoreL
       if (split.length >= 3) {
         overwritableTypes.addAll(Arrays.asList(split[2].trim().split(",")));
       }
+      // by default, always consider overwriting the background symbol
+      overwritableTypes.add("O");
 
       if (split.length == 4) {
         try {
@@ -325,8 +344,13 @@ public class RegexNERSequenceClassifier extends AbstractSequenceClassifier<CoreL
         String NERType = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
         String currentType = token.get(CoreAnnotations.AnswerAnnotation.class);
 
+        // Note that we allow currentType to be overwritable, but not in our set of provided labels
+        // The logic here is that if a higher priority regex matches a section, we don't want
+        // a lower priority regex to overwrite it
+        // see edu.stanford.nlp.pipeline.RegexNERAnnotatorITest::testPriority for an example
+        // TODO: perhaps we could let the current type be the same as the entry's type?
         if (
-            currentType != null ||
+            (currentType != null && !entry.overwritableTypes.contains(currentType)) ||
             (exact != null && ! (ignoreCase ? exact.equalsIgnoreCase(token.word()) : exact.equals(token.word()))) ||
             ! (entry.overwritableTypes.contains(NERType) || myLabels.contains(NERType))  ||
             ! pattern.matcher(token.word()).matches()  // last, as this is likely the expensive operation
